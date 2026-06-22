@@ -190,3 +190,7 @@ Airflow uses a **separate venv** (SQLAlchemy 1.4 vs 2.x). See [airflow/README.md
 docker compose up dbt-docs
 # → http://localhost:8082
 ```
+
+## License
+
+This project is licensed under the MIT License.
