@@ -1,0 +1,11 @@
+dbt-core<2.0
+dbt-postgres<2.0
+pandas
+numpy
+faker
+sqlalchemy>=2.0.36
+psycopg2-binary
+python-dotenv
+streamlit
+plotly
+openai

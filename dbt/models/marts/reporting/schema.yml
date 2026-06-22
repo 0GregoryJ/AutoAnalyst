@@ -1,0 +1,685 @@
+version: 2
+
+models:
+  - name: mart_account_health
+    description: Account-level health snapshot with users, MRR, engagement, and payment activity.
+    columns:
+      - name: account_id
+        description: Unique account identifier.
+        tests:
+          - not_null
+          - unique
+
+      - name: as_of_date
+        description: Snapshot date for subscription metrics and rolling 30-day windows.
+        tests:
+          - not_null
+
+      - name: current_mrr
+        description: Total active subscription MRR for the account on the as-of date.
+        tests:
+          - not_null
+
+      - name: is_at_risk
+        description: Whether the account is churned or paying with no recent product usage.
+        tests:
+          - not_null
+
+  - name: mart_transaction_health
+    description: Daily transaction health mart with volume, outcomes, and completed transaction value.
+    columns:
+      - name: metric_date
+        description: Calendar date of the transaction activity.
+        tests:
+          - not_null
+          - unique
+
+      - name: total_transactions
+        description: Total number of transactions created on the metric date.
+        tests:
+          - not_null
+
+      - name: completed_transactions
+        description: Number of transactions completed successfully on the metric date.
+        tests:
+          - not_null
+
+      - name: failed_transactions
+        description: Number of failed transactions on the metric date.
+        tests:
+          - not_null
+
+      - name: refunded_transactions
+        description: Number of refunded transactions on the metric date.
+        tests:
+          - not_null
+
+      - name: completed_transaction_volume
+        description: Total dollar value of completed transactions on the metric date.
+
+      - name: transaction_failure_rate
+        description: Share of daily transactions that failed.
+
+  - name: mart_user_transaction_activity
+    description: Daily transaction activity by user with counts, volume, and failure rate.
+    columns:
+      - name: user_id
+        description: Unique user identifier.
+        tests:
+          - not_null
+
+      - name: role
+        description: User role associated with the transaction activity.
+        tests:
+          - accepted_values:
+              arguments:
+                values: ['owner', 'admin', 'staff', 'billing_manager', 'operations_manager']
+
+      - name: user_status
+        description: Current user status.
+        tests:
+          - accepted_values:
+              arguments:
+                values: ['active', 'invited', 'deactivated']
+
+      - name: device_preference
+        description: User's preferred device type.
+        tests:
+          - accepted_values:
+              arguments:
+                values: ['desktop', 'mobile', 'tablet', 'mixed']
+
+      - name: onboarding_completed
+        description: Whether the user completed onboarding.
+
+      - name: metric_date
+        description: Calendar date of the user's transaction activity.
+        tests:
+          - not_null
+
+      - name: total_transactions
+        description: Total number of transactions associated with the user on the metric date.
+        tests:
+          - not_null
+
+      - name: completed_transactions
+        description: Number of completed transactions associated with the user on the metric date.
+        tests:
+          - not_null
+
+      - name: failed_transactions
+        description: Number of failed transactions associated with the user on the metric date.
+        tests:
+          - not_null
+
+      - name: completed_transaction_volume
+        description: Total dollar value of completed transactions associated with the user on the metric date.
+
+      - name: transaction_failure_rate
+        description: Share of the user's transactions that failed on the metric date.
+
+  - name: mart_mrr
+    description: Daily monthly recurring revenue mart with plan-level subscription and revenue breakdowns.
+    columns:
+      - name: metric_date
+        description: Calendar date of the MRR snapshot.
+        tests:
+          - not_null
+          - unique
+
+      - name: active_subscriptions
+        description: Number of active subscriptions on the metric date.
+        tests:
+          - not_null
+
+      - name: mrr
+        description: Total monthly recurring revenue on the metric date.
+        tests:
+          - not_null
+
+      - name: starter_mrr
+        description: Monthly recurring revenue from starter subscriptions on the metric date.
+        tests:
+          - not_null
+
+      - name: pro_mrr
+        description: Monthly recurring revenue from pro subscriptions on the metric date.
+
+      - name: business_mrr
+        description: Monthly recurring revenue from business subscriptions on the metric date.
+
+      - name: active_starter_subscriptions
+        description: Number of active starter subscriptions on the metric date.
+
+      - name: active_pro_subscriptions
+        description: Number of active pro subscriptions on the metric date.
+
+      - name: active_business_subscriptions
+        description: Number of active business subscriptions on the metric date.
+
+  - name: mart_churn
+    description: Daily churn mart with active base, cancellations, and plan-level cancellation counts.
+    columns:
+      - name: metric_date
+        description: Calendar date of the churn metrics.
+        tests:
+          - not_null
+          - unique
+
+      - name: active_subscriptions
+        description: Number of active subscriptions on the metric date.
+
+      - name: cancelled_subscriptions
+        description: Number of subscriptions cancelled on the metric date.
+
+      - name: starter_cancellations
+        description: Number of starter plan subscriptions cancelled on the metric date.
+
+      - name: pro_cancellations
+        description: Number of pro plan subscriptions cancelled on the metric date.
+
+      - name: business_cancellations
+        description: Number of business plan subscriptions cancelled on the metric date.
+
+      - name: daily_churn_rate
+        description: Share of active subscriptions cancelled on the metric date.
+
+  - name: mart_feature_adoption
+    description: Daily feature adoption mart with one row per feature per day and usage breakdowns.
+    columns:
+      - name: metric_date
+        description: Calendar date of the feature activity.
+        tests:
+          - not_null
+
+      - name: feature_id
+        description: Unique feature identifier.
+        tests:
+          - not_null
+
+      - name: feature_name
+        description: Name of the product feature.
+        tests:
+          - not_null
+
+      - name: feature_category
+        description: Category grouping for the feature.
+        tests:
+          - not_null
+
+      - name: minimum_plan
+        description: Minimum subscription plan required to access the feature.
+        tests:
+          - accepted_values:
+              arguments:
+                values: ['starter', 'pro', 'business']
+
+      - name: is_core_feature
+        description: Whether the feature is part of the core product offering.
+
+      - name: total_feature_events
+        description: Total number of product events for the feature on the metric date.
+        tests:
+          - not_null
+
+      - name: active_feature_users
+        description: Distinct users who triggered events for the feature on the metric date.
+        tests:
+          - not_null
+
+      - name: feature_sessions
+        description: Distinct sessions associated with feature events on the metric date.
+        tests:
+          - not_null
+
+      - name: successful_feature_events
+        description: Number of successful product events for the feature on the metric date.
+
+      - name: failed_feature_events
+        description: Number of failed product events for the feature on the metric date.
+
+      - name: owner_feature_events
+        description: Number of feature events triggered by owner users on the metric date.
+
+      - name: admin_feature_events
+        description: Number of feature events triggered by admin users on the metric date.
+
+      - name: staff_feature_events
+        description: Number of feature events triggered by staff users on the metric date.
+
+      - name: onboarded_feature_users
+        description: Distinct onboarded users who used the feature on the metric date.
+
+      - name: active_users_using_feature
+        description: Distinct active users who used the feature on the metric date.
+
+      - name: new_users_using_feature
+        description: Distinct new users who used the feature on the metric date.
+
+      - name: desktop_events
+        description: Number of desktop feature events on the metric date.
+
+      - name: mobile_events
+        description: Number of mobile feature events on the metric date.
+
+      - name: tablet_events
+        description: Number of tablet feature events on the metric date.
+
+      - name: events_per_active_user
+        description: Average number of feature events per active user on the metric date.
+
+      - name: feature_event_failure_rate
+        description: Share of feature events that failed on the metric date.
+
+  - name: mart_user_engagement
+    description: Daily user engagement mart with DAU, event intensity, onboarding reach, and category breakdowns.
+    columns:
+      - name: metric_date
+        description: Calendar date of user engagement activity.
+        tests:
+          - not_null
+          - unique
+
+      - name: daily_active_users
+        description: Distinct users with at least one product event on the metric date.
+        tests:
+          - not_null
+
+      - name: total_events
+        description: Total number of product events on the metric date.
+        tests:
+          - not_null
+
+      - name: events_per_active_user
+        description: Average number of product events per daily active user.
+        tests:
+          - not_null
+
+      - name: event_failure_rate
+        description: Share of product events that failed on the metric date.
+        tests:
+          - not_null
+
+      - name: onboarded_active_users
+        description: Distinct daily active users who completed onboarding.
+        tests:
+          - not_null
+
+      - name: onboarded_active_user_rate
+        description: Share of daily active users who completed onboarding.
+        tests:
+          - not_null
+
+      - name: active_mobile_users
+        description: Distinct daily active users with at least one mobile product event.
+        tests:
+          - not_null
+
+      - name: core_events
+        description: Product events in the core feature category.
+        tests:
+          - not_null
+
+      - name: billing_events
+        description: Product events in the billing feature category.
+        tests:
+          - not_null
+
+      - name: payments_events
+        description: Product events in the payments feature category.
+        tests:
+          - not_null
+
+      - name: scheduling_events
+        description: Product events in the scheduling feature category.
+        tests:
+          - not_null
+
+      - name: crm_events
+        description: Product events in the CRM feature category.
+        tests:
+          - not_null
+
+      - name: automation_events
+        description: Product events in the automation feature category.
+        tests:
+          - not_null
+
+      - name: reporting_events
+        description: Product events in the reporting feature category.
+        tests:
+          - not_null
+
+      - name: operations_events
+        description: Product events in the operations feature category.
+        tests:
+          - not_null
+
+      - name: integrations_events
+        description: Product events in the integrations feature category.
+        tests:
+          - not_null
+
+  - name: mart_plan_performance
+    description: Daily plan performance mart comparing starter, pro, and business across revenue, transactions, and engagement.
+    columns:
+      - name: metric_date
+        description: Calendar date of the plan performance metrics.
+        tests:
+          - not_null
+
+      - name: plan_id
+        description: Subscription plan tier.
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['starter', 'pro', 'business']
+
+      - name: active_subscriptions
+        description: Active subscriptions on the plan for the metric date.
+        tests:
+          - not_null
+
+      - name: new_subscriptions
+        description: Subscriptions started on the plan for the metric date.
+        tests:
+          - not_null
+
+      - name: cancelled_subscriptions
+        description: Subscriptions cancelled on the plan for the metric date.
+        tests:
+          - not_null
+
+      - name: churn_rate
+        description: Share of active subscriptions cancelled on the metric date for the plan.
+
+      - name: mrr
+        description: Monthly recurring revenue for the plan on the metric date.
+        tests:
+          - not_null
+
+      - name: avg_revenue_per_subscription
+        description: Average monthly recurring revenue per active subscription on the plan.
+
+      - name: total_transactions
+        description: Total transactions attributed to the plan on the metric date.
+        tests:
+          - not_null
+
+      - name: completed_transactions
+        description: Completed transactions attributed to the plan on the metric date.
+        tests:
+          - not_null
+
+      - name: failed_transactions
+        description: Failed transactions attributed to the plan on the metric date.
+        tests:
+          - not_null
+
+      - name: transaction_failure_rate
+        description: Share of plan-attributed transactions that failed on the metric date.
+        tests:
+          - not_null
+
+      - name: completed_transaction_volume
+        description: Dollar volume of completed transactions attributed to the plan.
+        tests:
+          - not_null
+
+      - name: total_product_events
+        description: Total product events attributed to the plan on the metric date.
+        tests:
+          - not_null
+
+      - name: active_users
+        description: Distinct active users attributed to the plan on the metric date.
+        tests:
+          - not_null
+
+      - name: events_per_active_user
+        description: Average product events per active user on the plan.
+        tests:
+          - not_null
+
+      - name: event_failure_rate
+        description: Share of plan-attributed product events that failed on the metric date.
+        tests:
+          - not_null
+
+      - name: active_onboarded_users
+        description: Distinct onboarded active users attributed to the plan on the metric date.
+        tests:
+          - not_null
+
+      - name: onboarded_active_user_rate
+        description: Share of active users on the plan who completed onboarding.
+        tests:
+          - not_null
+
+      - name: starter_mrr
+        description: Total MRR from starter plan subscriptions on the metric date for cross-plan comparison.
+        tests:
+          - not_null
+
+      - name: pro_mrr
+        description: Total MRR from pro plan subscriptions on the metric date for cross-plan comparison.
+        tests:
+          - not_null
+
+      - name: business_mrr
+        description: Total MRR from business plan subscriptions on the metric date for cross-plan comparison.
+        tests:
+          - not_null
+
+  - name: mart_daily_kpis
+    description: Wide daily executive KPI snapshot combining revenue, churn, engagement, transactions, and feature adoption metrics for dashboards and anomaly detection.
+    columns:
+      - name: metric_date
+        description: Calendar date for the daily KPI snapshot.
+        tests:
+          - not_null
+          - unique
+
+      - name: mrr
+        description: Total monthly recurring revenue on the metric date.
+        tests:
+          - not_null
+
+      - name: active_subscriptions
+        description: Number of active subscriptions on the metric date.
+        tests:
+          - not_null
+
+      - name: new_subscriptions
+        description: Number of subscriptions started on the metric date.
+        tests:
+          - not_null
+
+      - name: cancelled_subscriptions
+        description: Number of subscriptions cancelled on the metric date.
+        tests:
+          - not_null
+
+      - name: churn_rate
+        description: Share of active subscriptions cancelled on the metric date.
+        tests:
+          - not_null
+
+      - name: daily_active_users
+        description: Distinct users with at least one product event on the metric date.
+        tests:
+          - not_null
+
+      - name: total_product_events
+        description: Total product events recorded on the metric date.
+        tests:
+          - not_null
+
+      - name: events_per_active_user
+        description: Average product events per daily active user.
+        tests:
+          - not_null
+
+      - name: event_failure_rate
+        description: Share of product events that failed on the metric date.
+        tests:
+          - not_null
+
+      - name: total_transactions
+        description: Total transactions recorded on the metric date.
+        tests:
+          - not_null
+
+      - name: completed_transactions
+        description: Completed transactions recorded on the metric date.
+        tests:
+          - not_null
+
+      - name: failed_transactions
+        description: Failed transactions recorded on the metric date.
+        tests:
+          - not_null
+
+      - name: transaction_failure_rate
+        description: Share of transactions that failed on the metric date.
+        tests:
+          - not_null
+
+      - name: completed_transaction_volume
+        description: Dollar volume of completed transactions on the metric date.
+        tests:
+          - not_null
+
+      - name: total_feature_events
+        description: Total feature-level product events aggregated across all features on the metric date.
+        tests:
+          - not_null
+
+      - name: active_feature_users
+        description: Sum of active users across features on the metric date; may count users more than once if they used multiple features.
+        tests:
+          - not_null
+
+      - name: feature_event_failure_rate
+        description: Share of feature-level product events that failed on the metric date.
+        tests:
+          - not_null
+
+      - name: feature_adoption_rate
+        description: Share of catalog features with at least one event on the metric date.
+        tests:
+          - not_null
+
+      - name: mrr_dod_change
+        description: Day-over-day absolute change in MRR versus the prior day.
+        tests:
+          - not_null
+
+      - name: mrr_dod_pct_change
+        description: Day-over-day percent change in MRR versus the prior day.
+        tests:
+          - not_null
+
+      - name: daily_active_users_dod_change
+        description: Day-over-day absolute change in daily active users versus the prior day.
+        tests:
+          - not_null
+
+      - name: transaction_failure_rate_dod_change
+        description: Day-over-day absolute change in transaction failure rate versus the prior day.
+        tests:
+          - not_null
+
+      - name: churn_rate_dod_change
+        description: Day-over-day absolute change in churn rate versus the prior day.
+        tests:
+          - not_null
+
+      - name: overall_health_score
+        description: Composite business health score from 0 to 100 based on revenue, churn, and failure rates.
+        tests:
+          - not_null
+
+      - name: has_anomaly
+        description: Whether one or more KPI day-over-day changes exceeded anomaly thresholds.
+        tests:
+          - not_null
+
+  - name: mart_anomaly_candidates
+    description: Long-format daily KPI anomaly candidates for agent investigation, with thresholds and severity scoring.
+    columns:
+      - name: metric_date
+        description: Calendar date for the metric observation.
+        tests:
+          - not_null
+
+      - name: metric_name
+        description: KPI identifier such as mrr, churn_rate, or daily_active_users.
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values:
+                  - mrr
+                  - churn_rate
+                  - daily_active_users
+                  - events_per_active_user
+                  - event_failure_rate
+                  - transaction_failure_rate
+                  - completed_transaction_volume
+                  - active_subscriptions
+                  - cancelled_subscriptions
+
+      - name: metric_category
+        description: Business domain grouping for the metric.
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['revenue', 'retention', 'engagement', 'reliability']
+
+      - name: current_value
+        description: Metric value on the observation date.
+        tests:
+          - not_null
+
+      - name: previous_value
+        description: Metric value on the prior day, when available.
+
+      - name: absolute_change
+        description: Day-over-day absolute change in the metric.
+
+      - name: percent_change
+        description: Day-over-day percent change in the metric.
+
+      - name: threshold_value
+        description: Configured threshold used to flag this metric for investigation.
+        tests:
+          - not_null
+
+      - name: severity
+        description: Anomaly severity bucket based on how far the change exceeded the threshold.
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['none', 'low', 'medium', 'high', 'critical']
+
+      - name: anomaly_direction
+        description: Whether the metric moved up, down, or stayed flat versus the prior day.
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['up', 'down', 'flat']
+
+      - name: should_investigate
+        description: Whether the metric change exceeded its threshold and warrants investigation.
+        tests:
+          - not_null
+
+      - name: created_at
+        description: Timestamp when the anomaly candidate row was generated.
+        tests:
+          - not_null

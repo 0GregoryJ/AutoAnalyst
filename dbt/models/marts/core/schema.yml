@@ -1,0 +1,501 @@
+version: 2
+
+models:
+  - name: dim_users
+    description: User dimension with one row per user and analytics-ready engagement attributes.
+    columns:
+      - name: user_id
+        description: Unique user identifier.
+        tests:
+          - not_null
+          - unique
+
+      - name: account_id
+        description: Account the user belongs to.
+        tests:
+          - not_null
+
+      - name: first_name
+        description: User first name.
+
+      - name: last_name
+        description: User last name.
+
+      - name: full_name
+        description: User full name concatenated from first and last name.
+
+      - name: email
+        description: User email address.
+
+      - name: role
+        description: User role within the account.
+        tests:
+          - accepted_values:
+              arguments:
+                values: ['owner', 'admin', 'staff', 'billing_manager', 'operations_manager']
+
+      - name: user_status
+        description: Current lifecycle status of the user account.
+        tests:
+          - accepted_values:
+              arguments:
+                values: ['active', 'invited', 'deactivated']
+
+      - name: device_preference
+        description: User's preferred device type for product usage.
+
+      - name: notification_preference
+        description: User's preferred notification channel.
+
+      - name: user_timezone
+        description: User's preferred timezone for in-app activity.
+
+      - name: onboarding_completed
+        description: Whether the user completed product onboarding.
+
+      - name: created_at
+        description: Timestamp when the user record was created.
+
+      - name: user_created_date
+        description: Calendar date when the user record was created.
+
+      - name: last_login_at
+        description: Timestamp of the user's most recent login, when available.
+
+      - name: last_login_date
+        description: Calendar date of the user's most recent login, when available.
+
+      - name: onboarding_segment
+        description: Segment indicating whether the user completed onboarding.
+        tests:
+          - accepted_values:
+              arguments:
+                values: ['completed_onboarding', 'not_completed_onboarding']
+
+      - name: is_active_user
+        description: Whether the user currently has an active account status.
+        tests:
+          - not_null
+
+      - name: is_recently_active_user
+        description: Whether the user logged in within the last 30 days.
+
+      - name: is_new_user_30d
+        description: Whether the user was created within the last 30 days.
+
+  - name: dim_accounts
+    description: Account dimension with one row per customer account and segmentation attributes.
+    columns:
+      - name: account_id
+        description: Unique account identifier.
+        tests:
+          - not_null
+          - unique
+
+      - name: account_name
+        description: Business name of the account.
+
+      - name: industry
+        description: Primary industry vertical for the account.
+        tests:
+          - accepted_values:
+              arguments:
+                values: ['consulting', 'wellness', 'cleaning', 'auto_repair']
+
+      - name: company_size
+        description: Size segment of the account's business.
+        tests:
+          - accepted_values:
+              arguments:
+                values: ['solo', 'small', 'mid_market']
+
+      - name: region
+        description: US state region code for the account.
+        tests:
+          - accepted_values:
+              arguments:
+                values: ['CA', 'TX', 'NY', 'FL', 'WA']
+
+      - name: acquisition_channel
+        description: Marketing or sales channel that acquired the account.
+        tests:
+          - accepted_values:
+              arguments:
+                values: ['organic', 'paid_search', 'referral', 'social', 'partner']
+
+      - name: account_status
+        description: Current lifecycle status of the account.
+        tests:
+          - accepted_values:
+              arguments:
+                values: ['active', 'inactive', 'churned']
+
+      - name: signup_date
+        description: Calendar date when the account signed up.
+        tests:
+          - not_null
+
+      - name: account_created_date
+        description: Calendar date when the account record was created.
+
+      - name: account_updated_date
+        description: Calendar date when the account record was last updated.
+
+      - name: industry_display_name
+        description: Human-readable industry label for reporting.
+
+      - name: company_size_display_name
+        description: Human-readable company size label for reporting.
+
+      - name: acquisition_channel_display_name
+        description: Human-readable acquisition channel label for reporting.
+
+      - name: company_size_rank
+        description: Numeric rank of company size from solo to mid-market.
+
+      - name: is_active_account
+        description: Whether the account currently has an active status.
+        tests:
+          - not_null
+
+      - name: is_churned_account
+        description: Whether the account has churned.
+        tests:
+          - not_null
+
+      - name: is_new_account_30d
+        description: Whether the account signed up within the last 30 days.
+
+  - name: fact_transactions
+    description: Transaction fact table with one row per transaction and reusable analytics fields.
+    columns:
+      - name: transaction_id
+        description: Unique transaction identifier.
+        tests:
+          - not_null
+          - unique
+
+      - name: user_id
+        description: User associated with the transaction.
+        tests:
+          - not_null
+
+      - name: transaction_timestamp
+        description: Timestamp when the transaction occurred.
+        tests:
+          - not_null
+
+      - name: transaction_date
+        description: Calendar date when the transaction occurred.
+        tests:
+          - not_null
+
+      - name: transaction_week
+        description: Week start date for the transaction timestamp.
+
+      - name: transaction_month
+        description: Month start date for the transaction timestamp.
+
+      - name: transaction_amount
+        description: Dollar amount of the transaction.
+        tests:
+          - not_null
+
+      - name: transaction_status
+        description: Current outcome of the transaction.
+        tests:
+          - accepted_values:
+              arguments:
+                values: ['completed', 'failed', 'refunded', 'pending']
+
+      - name: payment_method
+        description: Payment method used for the transaction.
+        tests:
+          - accepted_values:
+              arguments:
+                values: ['card', 'ach', 'wallet']
+
+      - name: service_category
+        description: Type of business activity associated with the transaction.
+
+      - name: customer_type
+        description: Whether the paying customer was new or returning.
+
+      - name: failure_reason
+        description: Reason the transaction failed, when applicable.
+
+      - name: refund_reason
+        description: Reason the transaction was refunded, when applicable.
+
+      - name: is_completed_transaction
+        description: Whether the transaction completed successfully.
+
+      - name: is_failed_transaction
+        description: Whether the transaction failed.
+
+      - name: is_refunded_transaction
+        description: Whether the transaction was refunded.
+
+      - name: is_pending_transaction
+        description: Whether the transaction is still pending.
+
+      - name: completed_transaction_amount
+        description: Transaction amount counted only for completed transactions.
+
+      - name: failed_transaction_count
+        description: Numeric flag indicating a failed transaction.
+
+      - name: completed_transaction_count
+        description: Numeric flag indicating a completed transaction.
+
+      - name: refunded_transaction_count
+        description: Numeric flag indicating a refunded transaction.
+
+  - name: dim_plans
+    description: Plan dimension with one row per subscription tier and feature availability.
+    columns:
+      - name: plan_id
+        description: Subscription plan tier identifier.
+        tests:
+          - not_null
+          - unique
+
+      - name: monthly_price
+        description: Standard monthly price for the plan in dollars.
+        tests:
+          - not_null
+
+      - name: annual_price
+        description: Annualized price for the plan based on monthly price.
+
+      - name: plan_tier_rank
+        description: Numeric rank of the plan from entry level to enterprise.
+        tests:
+          - not_null
+
+      - name: plan_display_name
+        description: Human-readable plan name for reporting.
+
+      - name: available_feature_count
+        description: Number of features available on the plan tier.
+        tests:
+          - not_null
+
+      - name: available_core_feature_count
+        description: Number of core features available on the plan tier.
+
+      - name: is_entry_level_plan
+        description: Whether the plan is the starter entry-level tier.
+
+      - name: is_enterprise_plan
+        description: Whether the plan is the business enterprise tier.
+
+  - name: dim_features
+    description: Feature dimension with one row per product feature and analytics-ready attributes.
+    columns:
+      - name: feature_id
+        description: Unique feature identifier.
+        tests:
+          - not_null
+          - unique
+
+      - name: feature_name
+        description: Internal feature name used in product events.
+        tests:
+          - not_null
+
+      - name: feature_category
+        description: Functional category grouping for the feature.
+        tests:
+          - not_null
+
+      - name: minimum_plan
+        description: Minimum subscription plan required to access the feature.
+        tests:
+          - accepted_values:
+              arguments:
+                values: ['starter', 'pro', 'business']
+
+      - name: is_core_feature
+        description: Whether the feature is part of the core product offering.
+        tests:
+          - not_null
+
+      - name: feature_status
+        description: Current lifecycle status of the feature.
+        tests:
+          - accepted_values:
+              arguments:
+                values: ['active', 'beta', 'deprecated']
+
+      - name: released_at
+        description: Date the feature was released.
+
+      - name: adoption_difficulty
+        description: Expected difficulty for customers to adopt the feature.
+
+      - name: retention_impact
+        description: Expected impact of the feature on customer retention.
+
+      - name: minimum_plan_tier_rank
+        description: Numeric rank of the minimum plan required for the feature.
+
+      - name: feature_display_name
+        description: Human-readable feature name for reporting.
+
+      - name: is_active_feature
+        description: Whether the feature is currently active in the product.
+        tests:
+          - not_null
+
+      - name: is_beta_feature
+        description: Whether the feature is currently in beta.
+
+      - name: is_deprecated_feature
+        description: Whether the feature has been deprecated.
+
+      - name: is_starter_feature
+        description: Whether the feature requires only the starter plan.
+
+      - name: is_pro_feature
+        description: Whether the feature requires the pro plan.
+
+      - name: is_business_feature
+        description: Whether the feature requires the business plan.
+
+      - name: is_high_retention_feature
+        description: Whether the feature is expected to have high retention impact.
+
+      - name: adoption_segment
+        description: Segment describing expected customer adoption difficulty.
+        tests:
+          - accepted_values:
+              arguments:
+                values: ['easy_adoption', 'moderate_adoption', 'hard_adoption']
+
+  - name: fact_product_events
+    description: Product event fact table with one row per event and reusable analytics fields.
+    columns:
+      - name: event_id
+        description: Unique product event identifier.
+        tests:
+          - not_null
+          - unique
+
+      - name: user_id
+        description: User who triggered the product event.
+        tests:
+          - not_null
+
+      - name: session_id
+        description: Session associated with the product event.
+
+      - name: feature_id
+        description: Feature associated with the product event.
+        tests:
+          - not_null
+
+      - name: event_name
+        description: Name of the product event action.
+
+      - name: event_timestamp
+        description: Timestamp when the product event occurred.
+        tests:
+          - not_null
+
+      - name: event_date
+        description: Calendar date when the product event occurred.
+        tests:
+          - not_null
+
+      - name: event_week
+        description: Week start date for the product event timestamp.
+
+      - name: event_month
+        description: Month start date for the product event timestamp.
+
+      - name: device_type
+        description: Device type used for the product event.
+        tests:
+          - accepted_values:
+              arguments:
+                values: ['desktop', 'mobile', 'tablet']
+
+      - name: event_status
+        description: Outcome of the product event.
+        tests:
+          - accepted_values:
+              arguments:
+                values: ['success', 'failed']
+
+      - name: failure_reason
+        description: Reason the product event failed, when applicable.
+
+      - name: is_successful_event
+        description: Whether the product event completed successfully.
+
+      - name: is_failed_event
+        description: Whether the product event failed.
+
+      - name: successful_event_count
+        description: Numeric flag indicating a successful product event.
+
+      - name: failed_event_count
+        description: Numeric flag indicating a failed product event.
+
+  - name: fact_subs_by_day
+    description: Subscription fact table with one row per subscription per day and daily lifecycle flags.
+    columns:
+      - name: metric_date
+        description: Calendar date for the subscription snapshot.
+
+      - name: subscription_id
+        description: Unique subscription identifier.
+
+      - name: account_id
+        description: Account associated with the subscription.
+
+      - name: plan_id
+        description: Subscription plan tier on the metric date.
+
+      - name: monthly_price
+        description: Monthly subscription price on the metric date.
+
+      - name: billing_period
+        description: Billing cadence for the subscription.
+
+      - name: subscription_status
+        description: Subscription status on the metric date.
+
+      - name: started_at
+        description: Timestamp when the subscription became active.
+
+      - name: cancelled_at
+        description: Timestamp when the subscription was cancelled, if applicable.
+
+      - name: cancel_reason
+        description: Reason the subscription was cancelled, if applicable.
+
+      - name: payment_method
+        description: Payment method used for the subscription.
+
+      - name: auto_renew
+        description: Whether the subscription is set to renew automatically.
+
+      - name: discount_percent
+        description: Discount percentage applied to the subscription price.
+
+      - name: sales_assisted
+        description: Whether the subscription was closed with sales assistance.
+
+      - name: normalized_monthly_price
+        description: Monthly price normalized for reporting regardless of billing period.
+
+      - name: is_active_subscription
+        description: Whether the subscription is active on the metric date.
+
+      - name: is_cancelled_on_date
+        description: Whether the subscription was cancelled on the metric date.
+
+      - name: is_new_subscription_on_date
+        description: Whether the subscription started on the metric date.

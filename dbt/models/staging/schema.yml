@@ -1,0 +1,407 @@
+version: 2
+
+models:
+  - name: stg_accounts
+    description: Cleaned account records with firmographic, acquisition, and lifecycle attributes.
+    columns:
+      - name: account_id
+        description: Unique account identifier.
+        tests:
+          - not_null
+          - unique
+
+      - name: account_name
+        description: Business name of the account.
+
+      - name: industry
+        description: Primary industry vertical for the account.
+        tests:
+          - accepted_values:
+              arguments:
+                values: ['consulting', 'wellness', 'cleaning', 'auto_repair']
+
+      - name: company_size
+        description: Size segment of the account's business.
+        tests:
+          - accepted_values:
+              arguments:
+                values: ['solo', 'small', 'mid_market']
+
+      - name: region
+        description: US state region code for the account.
+        tests:
+          - accepted_values:
+              arguments:
+                values: ['CA', 'TX', 'NY', 'FL', 'WA']
+
+      - name: signup_date
+        description: Calendar date when the account signed up.
+        tests:
+          - not_null
+
+      - name: acquisition_channel
+        description: Marketing or sales channel that acquired the account.
+        tests:
+          - accepted_values:
+              arguments:
+                values: ['organic', 'paid_search', 'referral', 'social', 'partner']
+
+      - name: account_status
+        description: Current lifecycle status of the account.
+        tests:
+          - accepted_values:
+              arguments:
+                values: ['active', 'inactive', 'churned']
+
+      - name: created_at
+        description: Timestamp when the account record was created.
+
+      - name: updated_at
+        description: Timestamp when the account record was last updated.
+
+  - name: stg_transactions
+    description: Cleaned transaction records with standardized status, payment, and category fields.
+    columns:
+      - name: transaction_id
+        description: Unique transaction identifier.
+        tests:
+          - not_null
+          - unique
+
+      - name: user_id
+        description: User who initiated or is associated with the transaction.
+        tests:
+          - not_null
+
+      - name: transaction_timestamp
+        description: Timestamp when the transaction occurred.
+        tests:
+          - not_null
+
+      - name: transaction_amount
+        description: Dollar amount of the transaction.
+        tests:
+          - not_null
+
+      - name: transaction_status
+        description: Current outcome of the transaction.
+        tests:
+          - accepted_values:
+              arguments:
+                values: ['completed', 'failed', 'refunded', 'pending']
+
+      - name: payment_method
+        description: Payment method used for the transaction.
+        tests:
+          - accepted_values:
+              arguments:
+                values: ['card', 'ach', 'wallet']
+
+      - name: service_category
+        description: Type of business activity associated with the transaction.
+
+      - name: customer_type
+        description: Whether the paying customer was new or returning.
+
+      - name: failure_reason
+        description: Reason the transaction failed, when applicable.
+
+      - name: refund_reason
+        description: Reason the transaction was refunded, when applicable.
+
+  - name: stg_users
+    description: Cleaned user records with account membership and engagement attributes.
+    columns:
+      - name: user_id
+        description: Unique user identifier.
+        tests:
+          - not_null
+          - unique
+
+      - name: account_id
+        description: Account the user belongs to.
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_accounts')
+                field: account_id
+
+      - name: first_name
+        description: User first name.
+
+      - name: last_name
+        description: User last name.
+
+      - name: email
+        description: User email address.
+
+      - name: role
+        description: User role within the account.
+        tests:
+          - accepted_values:
+              arguments:
+                values: ['owner', 'admin', 'staff', 'billing_manager', 'operations_manager']
+
+      - name: user_status
+        description: Current lifecycle status of the user account.
+        tests:
+          - accepted_values:
+              arguments:
+                values: ['active', 'invited', 'deactivated']
+
+      - name: device_preference
+        description: User's preferred device type for product usage.
+
+      - name: notification_preference
+        description: User's preferred notification channel.
+
+      - name: onboarding_completed
+        description: Whether the user completed product onboarding.
+        tests:
+          - not_null
+
+      - name: created_at
+        description: Timestamp when the user record was created.
+
+      - name: last_login_at
+        description: Timestamp of the user's most recent login, when available.
+
+      - name: user_timezone
+        description: User's preferred timezone for in-app activity.
+
+  - name: stg_subscriptions
+    description: Cleaned subscription records with plan, billing, and lifecycle fields.
+    columns:
+      - name: subscription_id
+        description: Unique subscription identifier.
+        tests:
+          - not_null
+          - unique
+
+      - name: account_id
+        description: Account associated with the subscription.
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_accounts')
+                field: account_id
+
+      - name: plan_id
+        description: Subscription plan tier.
+        tests:
+          - not_null
+
+      - name: monthly_price
+        description: Monthly subscription price in dollars.
+        tests:
+          - not_null
+
+      - name: billing_period
+        description: Billing cadence for the subscription.
+        tests:
+          - accepted_values:
+              arguments:
+                values: ['monthly', 'annual']
+
+      - name: subscription_status
+        description: Current lifecycle status of the subscription.
+        tests:
+          - accepted_values:
+              arguments:
+                values: ['trialing', 'active', 'past_due', 'cancelled']
+
+      - name: trial_started_at
+        description: Timestamp when the subscription trial began, if applicable.
+
+      - name: trial_ended_at
+        description: Timestamp when the subscription trial ended, if applicable.
+
+      - name: started_at
+        description: Timestamp when the subscription became active.
+
+      - name: cancelled_at
+        description: Timestamp when the subscription was cancelled, if applicable.
+
+      - name: cancel_reason
+        description: Reason the subscription was cancelled, if applicable.
+
+      - name: payment_method
+        description: Payment method used for the subscription.
+
+      - name: auto_renew
+        description: Whether the subscription is set to renew automatically.
+
+      - name: discount_percent
+        description: Discount percentage applied to the subscription price.
+
+      - name: sales_assisted
+        description: Whether the subscription was closed with sales assistance.
+
+      - name: updated_at
+        description: Timestamp when the subscription record was last updated.
+
+  - name: stg_product_events
+    description: Cleaned product event records with standardized event names and outcomes.
+    columns:
+      - name: event_id
+        description: Unique product event identifier.
+        tests:
+          - not_null
+          - unique
+
+      - name: user_id
+        description: User who triggered the product event.
+        tests:
+          - not_null
+
+      - name: session_id
+        description: Session associated with the product event.
+        tests:
+          - not_null
+
+      - name: feature_id
+        description: Feature associated with the product event.
+        tests:
+          - not_null
+
+      - name: event_name
+        description: Name of the product event action.
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values:
+                  - login
+                  - create_invoice
+                  - send_payment_reminder
+                  - process_payment
+                  - book_service
+                  - view_customer_history
+                  - automated_followup
+                  - export_report
+                  - advanced_reporting
+                  - team_task_assignment
+                  - client_portal
+                  - recurring_invoice
+                  - contract_template
+                  - tax_summary
+                  - integration_settings
+
+      - name: event_timestamp
+        description: Timestamp when the product event occurred.
+        tests:
+          - not_null
+
+      - name: device_type
+        description: Device type used for the product event.
+        tests:
+          - accepted_values:
+              arguments:
+                values: ['desktop', 'mobile', 'tablet']
+
+      - name: event_status
+        description: Outcome of the product event.
+        tests:
+          - accepted_values:
+              arguments:
+                values: ['success', 'failed']
+
+      - name: failure_reason
+        description: Reason the product event failed, when applicable.
+        tests:
+          - accepted_values:
+              arguments:
+                values:
+                  - validation_error
+                  - timeout
+                  - permission_denied
+                  - integration_error
+                  - unknown
+
+  - name: stg_features
+    description: Cleaned product feature catalog used to describe in-app capabilities.
+    columns:
+      - name: feature_id
+        description: Unique feature identifier.
+        tests:
+          - not_null
+          - unique
+
+      - name: feature_name
+        description: Name of the product feature.
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values:
+                  - login
+                  - create_invoice
+                  - send_payment_reminder
+                  - process_payment
+                  - book_service
+                  - view_customer_history
+                  - automated_followup
+                  - export_report
+                  - advanced_reporting
+                  - team_task_assignment
+                  - client_portal
+                  - recurring_invoice
+                  - contract_template
+                  - tax_summary
+                  - integration_settings
+
+      - name: feature_category
+        description: Functional category grouping for the feature.
+        tests:
+          - accepted_values:
+              arguments:
+                values:
+                  - core
+                  - billing
+                  - payments
+                  - scheduling
+                  - crm
+                  - automation
+                  - reporting
+                  - operations
+                  - integrations
+
+      - name: minimum_plan
+        description: Minimum subscription plan required to access the feature.
+        tests:
+          - accepted_values:
+              arguments:
+                values: ['starter', 'pro', 'business']
+
+      - name: is_core_feature
+        description: Whether the feature is part of the core product offering.
+        tests:
+          - not_null
+
+      - name: feature_status
+        description: Current lifecycle status of the feature.
+        tests:
+          - accepted_values:
+              arguments:
+                values: ['active', 'beta', 'deprecated']
+
+      - name: released_at
+        description: Date the feature was released.
+        tests:
+          - not_null
+
+      - name: adoption_difficulty
+        description: Expected difficulty for customers to adopt the feature.
+        tests:
+          - accepted_values:
+              arguments:
+                values: ['low', 'medium', 'high']
+
+      - name: retention_impact
+        description: Expected impact of the feature on customer retention.
+        tests:
+          - accepted_values:
+              arguments:
+                values: ['low', 'medium', 'high']

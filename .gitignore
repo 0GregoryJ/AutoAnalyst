@@ -1,0 +1,55 @@
+# Secrets
+.env
+.streamlit/secrets.toml
+
+# Python
+__pycache__/
+**/__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+.eggs/
+dist/
+build/
+.venv/
+airflow/.venv/
+
+# Generated data
+raw_data/*
+!raw_data/.gitkeep
+
+# dbt
+dbt/target/
+dbt/logs/
+dbt/dbt_packages/
+dbt/profiles.yml
+dbt/.user.yml
+
+# Root-level runtime logs (separate from dbt/logs/)
+logs/
+
+# Investigation reports (sample reports committed for demo)
+reports/investigations/*
+!reports/investigations/.gitkeep
+!reports/investigations/2026-06-13_transaction_failure_rate.md
+!reports/investigations/2026-06-22_transaction_failure_rate.md
+
+# Airflow runtime
+airflow/logs/**
+!airflow/logs/.gitkeep
+airflow/airflow/
+airflow/airflow.db
+airflow/airflow.cfg
+airflow/webserver_config.py
+airflow/standalone_admin_password.txt
+airflow/*.pid
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo

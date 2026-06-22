@@ -1,0 +1,24 @@
+version: 2
+
+sources:
+  - name: raw
+    description: Raw source tables loaded from generated CSV backfill and daily batches.
+    schema: public
+    tables:
+      - name: raw_accounts
+        description: Raw account records with firmographic, acquisition, and lifecycle attributes.
+
+      - name: raw_users
+        description: Raw user records with account membership, role, and engagement preferences.
+
+      - name: raw_subscriptions
+        description: Raw subscription records with plan, billing, and lifecycle timestamps.
+
+      - name: raw_features
+        description: Raw product feature catalog with plan access and release metadata.
+
+      - name: raw_product_events
+        description: Raw in-app product usage events tied to users, sessions, and features.
+
+      - name: raw_transactions
+        description: Raw payment and service transaction records tied to users.
