@@ -2,6 +2,10 @@
 
 End-to-end analytics platform for a synthetic B2B SaaS company. Generates operational data, loads it into PostgreSQL, transforms it with dbt, orchestrates daily refreshes with Airflow, and surfaces KPIs in a Streamlit executive dashboard — with an AutoAnalyst agent that investigates flagged anomalies.
 
+## Why this project matters
+
+AutoAnalyst demonstrates a production-style analytics workflow: raw SaaS operational data is generated, loaded into PostgreSQL, transformed through dbt staging/core/reporting layers, validated with dbt tests, orchestrated with Airflow, and served through a Streamlit executive dashboard. An AI investigation agent reads anomaly candidates from dbt marts, runs targeted SQL checks, and writes plain-English investigation reports.
+
 ![Dashboard overview](docs/screenshots/dashboard-overview.png)
 ![dbt lineage](docs/screenshots/dbt-docs.png)
 
@@ -131,6 +135,16 @@ AutoAnalyst/
 ├── raw_data/                 # generated CSVs (gitignored)
 └── reports/investigations/   # agent markdown reports
 ```
+
+## Project scale
+
+- 6 raw source tables
+- 22 dbt models
+- 200+ dbt tests
+- Historical SaaS data generated from 2022 through present
+- Daily incremental batch pipeline
+- Airflow DAG with dbt test quality gate
+- Streamlit dashboard with executive KPIs and anomaly investigations
 
 ## Documentation
 
